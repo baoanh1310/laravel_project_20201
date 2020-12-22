@@ -5,75 +5,76 @@ namespace Modules\Category\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Category\Models\Category;
+use Modules\Category\Components\Recursive;
+
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
-    public function index()
+    private $category;
+
+    public function __construct(Category $category)
     {
-        return view('category::index');
+        $this->category = $category;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * @return Renderable
-     */
     public function create()
     {
-        return view('category::create');
+        $htmlOption = $this->getCategory($parentId = '');
+        return view('category::add', compact('htmlOption'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     * @param Request $request
-     * @return Renderable
-     */
+    public function index()
+    {
+        $categories = $this->category->latest()->paginate(5);
+        return view('category::index', compact('categories'));
+    }
+
     public function store(Request $request)
     {
-        //
+        $this->category->create([
+            'name' => $request->name,
+            'parent_id' => $request->parent_id,
+            'slug' => str_slug($request->name)
+        ]);
+
+        return redirect()->route('categories.index');
+
     }
 
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function show($id)
+    public function getCategory($parentId)
     {
-        return view('category::show');
+        $data = $this->category->all();
+        $recursive = new Recursive($data);
+        $htmlOption = $recursive->categoryRecursive($parentId);
+        return $htmlOption;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
     public function edit($id)
     {
-        return view('category::edit');
+        $category = $this->category->find($id);
+        $htmlOption = $this->getCategory($category->parent_id);
+
+        return view('category::edit', compact('category', 'htmlOption'));
+
     }
 
-    /**
-     * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
-     * @return Renderable
-     */
-    public function update(Request $request, $id)
+    public function update($id, Request $request)
     {
-        //
+        $this->category->find($id)->update([
+            'name' => $request->name,
+            'parent_id' => $request->parent_id,
+            'slug' => str_slug($request->name)
+        ]);
+        return redirect()->route('categories.index');
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     * @param int $id
-     * @return Renderable
-     */
-    public function destroy($id)
+    public function delete($id)
     {
-        //
+        $this->category->find($id)->delete();
+        return redirect()->route('categories.index');
+
     }
 }
+
