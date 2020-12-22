@@ -3,5 +3,6 @@
     "Category": true,
     "Contact": true,
     "Order": true,
-    "Role": true
+    "Role": true,
+    "User": true
 }
