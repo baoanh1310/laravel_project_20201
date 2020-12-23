@@ -4,6 +4,7 @@ namespace Modules\Order\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class OrderDatabaseSeeder extends Seeder
 {
@@ -14,8 +15,12 @@ class OrderDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        Model::unguard();
 
+        DB::table('orderstates')->insert([
+            ['state_name'=>'Cho thanh toan'],
+            ['state_name'=>'Da thanh toan'],
+            ['state_name'=>'Huy don']
+        ]);
         // $this->call("OthersTableSeeder");
     }
 }
